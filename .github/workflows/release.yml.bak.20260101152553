@@ -1,0 +1,75 @@
+name: Release (on tag)
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  ARTIFACT_NAME: sshx-x86_64-pc-windows-msvc.zip
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PowerShell
+        uses: actions/setup-python@v4
+        # Note: we still run pwsh steps; this just ensures environment.
+
+      - name: Compute SHA256
+        shell: pwsh
+        run: |
+          $file = "$PWD\$env:ARTIFACT_NAME"
+          if (-not (Test-Path $file)) {
+            Write-Host "Artifact not found in repo root: $file"
+            exit 1
+          }
+          $hash = (Get-FileHash -Path $file -Algorithm SHA256).Hash
+          Write-Host "sha256=$hash" | Out-File -FilePath sha256.txt -Encoding ASCII
+          Write-Host "Computed SHA256: $hash"
+
+      - name: Create GitHub Release
+        id: release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body_path: sha256.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact to release
+        uses: actions/upload-release-asset@v2
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: ${{ env.ARTIFACT_NAME }}
+          asset_name: ${{ env.ARTIFACT_NAME }}
+          asset_content_type: application/zip
+
+      - name: Create detached GPG signature (optional)
+        if: secrets.GPG_PRIVATE_KEY != ''
+        shell: pwsh
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          # Import private key
+          $gpgHome = Join-Path $env:RUNNER_TEMP "gnupg"
+          New-Item -ItemType Directory -Path $gpgHome -Force | Out-Null
+          $env:GNUPGHOME = $gpgHome
+          $privateKey = $env:GPG_PRIVATE_KEY
+          $privateKey | Out-File -FilePath "$gpgHome\key.asc" -Encoding ascii
+          gpg --batch --import "$gpgHome\key.asc"
+          # Sign artifact
+          gpg --batch --yes --passphrase $env:GPG_PASSPHRASE --armor --output "${{ env.ARTIFACT_NAME }}.sig" --detach-sign "${{ env.ARTIFACT_NAME }}"
+      - name: Upload signature (if created)
+        if: secrets.GPG_PRIVATE_KEY != ''
+        uses: actions/upload-release-asset@v2
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: ${{ env.ARTIFACT_NAME }}.sig
+          asset_name: ${{ env.ARTIFACT_NAME }}.sig
+          asset_content_type: application/pgp-signature
