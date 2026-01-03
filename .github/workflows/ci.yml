@@ -33,11 +33,15 @@ jobs:
         run: |
           # Check Linux script
           if [ -d "linux" ]; then
-            shellcheck linux/*.sh || true
+            shellcheck linux/sshx-manager.sh || true
           fi
           # Check macOS script
           if [ -d "macos" ]; then
-            shellcheck -s bash macos/*.zsh || true
+            shellcheck -s bash macos/sshx-manager.zsh || true
+          fi
+          # Check Android script
+          if [ -d "android" ]; then
+            shellcheck android/sshx-manager-termux.sh || true
           fi
 
   syntax-check:
