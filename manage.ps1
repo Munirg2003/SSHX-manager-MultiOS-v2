@@ -5,7 +5,7 @@
 if ($IsWindows -or $env:OS -match "Windows") {
     Write-Host "[INFO] Detected Platform: Windows" -ForegroundColor Cyan
     # Directly run the main windows script
-    & "$PSScriptRoot\sshx-manager.ps1"
+    & "$PSScriptRoot\windows\sshx-manager.ps1"
 }
 elseif ($IsLinux) {
     # Check for Termux

@@ -46,7 +46,7 @@ case "$OS_TYPE" in
         echo "[INFO] Launching PowerShell Manager..."
         # Check if running in a shell that can find powershell.exe
         if command -v powershell.exe >/dev/null 2>&1; then
-            powershell.exe -ExecutionPolicy Bypass -File "sshx-manager.ps1"
+            powershell.exe -ExecutionPolicy Bypass -File "windows/sshx-manager.ps1"
         else
             echo "[ERROR] powershell.exe not found in PATH."
             exit 1
